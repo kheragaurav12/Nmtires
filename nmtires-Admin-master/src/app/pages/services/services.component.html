@@ -1,0 +1,334 @@
+<div class="header bg-default pb-8 pt-5 pt-md-8">
+  <div class="container-fluid"></div>
+</div>
+<div class="container-fluid mt--9">
+  <div class="row">
+    <div class="col">
+      <div class="card">
+        <div class="card-header bg-white">
+          <div class="row w-100 m-0">
+            <div class="col-sm-6 p-0">
+              <h3>Tires</h3>
+            </div>
+            <div class="col-sm-6 p-0">
+              <button class="btn btn-default btn-sm float-right ml-2" *ngIf="tiresList.length !== 0"
+                (click)="exportServices()">
+                Export
+              </button>
+
+              <button class="btn btn-default btn-sm float-right" (click)="openModal(serviceModal)">
+                Add Tire
+              </button>
+              <!-- <div class="row w-100 m-0">
+                <div class="form-group col-7 m-0">
+                  <input type="month" class="form-control" placeholder="dd/mm/yyyy" name="d2">
+                </div>
+              </div> -->
+            </div>
+          </div>
+        </div>
+        <div class="card-body" *ngIf="tiresList.length === 0">
+          <div class="d-flex flex-column justify-content-center align-items-center">
+            <img src="assets/img/empty.svg" class="img-fluid" height="200px" width="200px" alt="No Data">
+            <h3 class="mt-4 text-sm text-muted">No Tire Records Found</h3>
+          </div>
+        </div>
+        <div class="table-responsive" *ngIf="tiresList.length !== 0">
+          <table class="table table-flush">
+            <thead class="thead-light">
+              <tr>
+                <th scope="col">Sr. No</th>
+                <th scope="col">Name / Category</th>
+                <th scope="col">Size</th>
+                <th scope="col">Status</th>
+                <th scope="col">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let product of tiresList; index as idx">
+                <td>{{ idx + 1 }}</td>
+                <td class="d-flex flex-column">
+                  <span class="font-weight-bold">{{ product.title }}</span>
+                  <span class="text-sm text-muted text-wrap text-limit" *ngIf="product.category != null">
+                    {{ product.category.categoryName }}
+                  </span>
+                </td>
+                <td>
+                  {{ product.size.diameter + "-" + product.size.width + "-" +product.size.rim }}
+                </td>
+                <td>
+                  <h3>
+                    <span class="badge badge-pill {{ product.active ? 'badge-success' : 'badge-danger' }}">
+                      {{ product.active ? "Active" : "In-Active" }}
+                    </span>
+                  </h3>
+                </td>
+                <td>
+                  <button class="btn btn-default btn-sm"
+                    (click)="openImageModal(viewImageModal, product.imageUrls, product.thumbnailImage)">Images</button>
+                  <button class="btn btn-default btn-sm"
+                    (click)="viewServiceDetails(viewModal, product)">Details</button>
+                  <button class="btn btn-default btn-sm" (click)="openModal(serviceModal, product)">Edit</button>
+                  <button class="btn btn-danger btn-sm" (click)="openDeleteModal(deleteModal, product)">Delete</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card-footer" *ngIf="showLoadMore">
+          <button class="btn btn-sm btn-default pull-right" (click)="loadMoreServiceServices()">
+            Load More
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #serviceModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title">Plant {{ updation ? 'Updation' : 'Creation' }}</h4>
+    <button type="button" class="close" aria-label="Close" id="closeAddNewStaffModal" #closeAddNewStaffModal
+      (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <form [formGroup]="tireForm" (ngSubmit)="registeredService(tireForm)" ngNativeValidate>
+    <div class="modal-body">
+      <div class="row">
+        <div class="col-12 col-sm-4">
+          <div class="form-group m-0 mb-2">
+            <label for="name" class="text-sm">Tire Name</label>
+            <div id="name" class="input-group m-0">
+              <div class="input-group-prepend">
+                <span class="input-group-text">
+                  <i class="fa fa-align-justify"></i>
+                </span>
+              </div>
+              <input type="text" name="title" formControlName="title" class="form-control" placeholder="Name" required>
+            </div>
+          </div>
+          <!-- <div class="form-group m-0 mb-2">
+            <label for="name" class="text-sm">Plant Sciencetific Name</label>
+            <div id="name" class="input-group m-0">
+              <div class="input-group-prepend">
+                <span class="input-group-text">
+                  <i class="fa fa-align-justify"></i>
+                </span>
+              </div>
+              <input type="text" name="scientificName" formControlName="scientificName" class="form-control"
+                placeholder="Name" required>
+            </div>
+          </div> -->
+          <div class="form-group m-0 mb-2">
+            <label for="name" class="text-sm">Tire Category</label>
+            <div id="name" class="input-group m-0">
+              <div class="input-group-prepend">
+                <span class="input-group-text">
+                  <i class="fa fa-get-pocket"></i>
+                </span>
+              </div>
+              <select name="category" class="custom-select shadow-none" formControlName="category"
+                [compareWith]="compareByCategoryId" (selectedValueChange)="onSelectOption($event.target.value)"
+                required>
+                <option *ngFor="let category of categories; index as idx" [ngValue]="category">{{ category.categoryName
+                  }}
+                </option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group m-0 mb-2">
+            <label for="status" class="text-sm">Tire status</label><br>
+            <div id="status" class="btn-group btn-group-toggle" ngbRadioGroup formControlName="active">
+              <label ngbButtonLabel class="btn-primary btn-sm">
+                <input ngbButton type="radio" [value]="true">Enable
+              </label>
+              <label ngbButtonLabel class="btn-danger btn-sm">
+                <input ngbButton type="radio" [value]="false">Disable
+              </label>
+            </div>
+          </div>
+          <div class="form-group m-0 mb-2">
+            <label for="status" class="text-sm">Show On Home Page</label><br>
+            <div id="status" class="btn-group btn-group-toggle" ngbRadioGroup formControlName="showOnHomePage">
+              <label ngbButtonLabel class="btn-primary btn-sm">
+                <input ngbButton type="radio" [value]="true">Visible
+              </label>
+              <label ngbButtonLabel class="btn-danger btn-sm">
+                <input ngbButton type="radio" [value]="false">Not Visible
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-sm-8">
+          <div class="col d-flex flex-column m-0 mb-2 px-0">
+            <label for="Size">Tire Info</label>
+            <div id="size" formGroupName="size" class="row">
+              <div class="form-group col">
+                <label class="text-sm text-muted" for="diameter">Diameter</label>
+                <input type="number" class="form-control" name="diameter" id="diameter" formControlName="diameter">
+              </div>
+              <div class="form-group col">
+                <label class="text-sm text-muted" for="width">Width</label>
+                <input type="number" class="form-control" name="width" id="width" formControlName="width">
+              </div>
+              <div class="form-group col">
+                <label class="text-sm text-muted" for="rim">Rim</label>
+                <input type="number" class="form-control" name="rim" id="rim" formControlName="rim">
+              </div>
+            </div>
+          </div>
+          <div class="form-group m-0 mb-2">
+            <label for="description" class="text-sm">Description</label>
+            <div id="description" class="input-group m-0">
+              <div class="input-group-prepend">
+                <span class="input-group-text">
+                  <i class="fa fa-align-justify"></i>
+                </span>
+              </div>
+              <textarea name="description" id="adress" rows="4" class="form-control"
+                formControlName="description"></textarea>
+            </div>
+          </div>
+          <div class="col-12 px-0">
+            <div class="d-flex flex-column">
+              <div class="d-flex justify-content-between align-items-center">
+                <h3 class="m-0">Plant Images</h3>
+                <input type="file" #file (change)="checkImageFileType($event.target.files)" multiple hidden>
+                <button type="button" class="btn btn-sm btn-default" (click)="file.click()">
+                  Add
+                </button>
+              </div>
+            </div>
+            <div class="row mt-2" *ngIf="tempImageFiles.length == 0">
+              <div class="col-12" style="height: 40px;">
+                <div class="d-flex flex-column align-items-center justify-content-center">
+                  <span class="material-icons" style="font-size: 26px;">warning</span>
+                  <h4 class="m-0 mt-1">No Images</h4>
+                </div>
+              </div>
+            </div>
+            <div class="row mt-2" *ngIf="tempImageFiles.length != 0">
+              <div class="col-12 my-2" *ngFor="let imageFile of tempImageFiles; index as idx">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="d-flex flex-column">
+                    <h3 class="m-0 mb-1">{{ idx + 1 }}. {{ imageFile.name ||
+                      getFileNameFromFirebaseDownloadedUrl(imageFile) }}</h3>
+                    <span *ngIf="tireForm.get('thumbnailImage').value === idx" class="text-sm text-muted">
+                      Selected as Thumnail Image
+                    </span>
+                  </div>
+                  <div class="d-flex align-items-center">
+                    <button type="button" class="btn btn-primary btn-sm" (click)="changeThumbnailImageIdx(idx)"
+                      [ngClass]="{
+                      'btn-success': tireForm.get('thumbnailImage').value === idx
+                    }">
+                      {{ tireForm.get('thumbnailImage').value === idx ? 'Selected' : 'Select' }}
+                    </button>
+                    <button type="button" class="btn btn-danger btn-sm" (click)="removeImage(idx)">
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-default btn-sm" (click)="modal.dismiss('')">
+        Cancel
+      </button>
+      <button type="submit" class="btn btn-default btn-sm" [disabled]="loader">
+        Save
+        <span *ngIf="loader">&nbsp;</span>
+        <div *ngIf="loader" class="spinner-border spinner-border-sm text-white" role="status">
+          <span class="sr-only">Loading...</span>
+        </div>
+      </button>
+    </div>
+  </form>
+
+</ng-template>
+
+
+<ng-template #viewImageModal let-modal>
+  <div class="modal-header border-0 d-flex justify-content-between align-items-center">
+    <h3>Images</h3>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="row">
+      <div class="col-12 col-sm-2 px-0 border-right verticalScroll">
+        <ul class="list-group list-group-flush">
+          <li class="list-hover list-group-item" *ngFor="let imgSrc of tempImageFiles; index as idx"
+            (click)="selectedImageIdx = idx">
+            <div class="position-absolute mt-2" *ngIf="thumbnailImageIdx === idx">
+              <h4 class="thumbnail-image-tag px-2 py-1">Thumbnail Image</h4>
+            </div>
+            <img [src]="imgSrc" [alt]="imgSrc" class="img-fluid rounded shadow-sm" height="64px" loading="lazy">
+          </li>
+        </ul>
+      </div>
+      <div class="col-12 col-sm-10">
+        <div class="sticky-top">
+          <img [src]="tempImageFiles[selectedImageIdx]" [alt]="tempImageFiles[selectedImageIdx]"
+            class="img-fluid shadow-sm img-style" loading="lazy" title="View Full Image"
+            (click)="openImage(tempImageFiles[selectedImageIdx])">
+        </div>
+      </div>
+    </div>
+    <!-- <div class="col-12 d-flex align-items-center justify-content-center">
+      <img [src]="imageUrl" class="img-fluid shadow-sm" alt="" style="height: 25em;">
+    </div> -->
+  </div>
+</ng-template>
+
+<ng-template let-modal #viewModal>
+  <div class="modal-header border-0 d-flex justify-content-between align-items-center">
+    <h3>Product Details</h3>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="d-flex flex-column">
+      <span class="text-sm text-muted">Name</span>
+      <h4>{{ productModel.title }}</h4>
+    </div>
+    <div class="d-flex flex-column">
+      <span class="text-sm text-muted">Price</span>
+      <h4>&#8377;{{ productModel.price }}</h4>
+    </div>
+    <div class="d-flex flex-column">
+      <span class="text-sm text-muted">Description</span>
+      <h4 class="text-wrap">{{ productModel.description || 'Not Provided' }}</h4>
+    </div>
+    <div class="d-flex flex-column">
+      <span class="text-sm text-muted">Added On</span>
+      <h4 class="text-wrap">{{ productModel.createdOn.toDate() | date: 'dd MMMM yyyy, hh:MM:ss aa' }}</h4>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #deleteModal let-modal>
+  <div class="modal-header d-flex justify-content-between align-items-center">
+    <h4 class="modal-title">Are you sure want to delete this service?</h4>
+    <button type="button" class="close" aria-label="Close" id="closeModal" #closeModal
+      (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-sm btn-default float-right mr-2" (click)="modal.dismiss('Cross click')">
+      NO
+    </button>
+    <button type="submit" class="btn btn-sm btn-danger float-right mr-2" (click)="deleteService()">
+      YES
+    </button>
+
+  </div>
+</ng-template>

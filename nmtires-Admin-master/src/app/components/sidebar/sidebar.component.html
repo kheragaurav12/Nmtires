@@ -1,0 +1,46 @@
+<nav class="navbar navbar-vertical navbar-expand-md navbar-dark bg-dark" id="sidenav-main">
+  <div class="container-fluid">
+    <button class="navbar-toggler" type="button" (click)="isCollapsed=!isCollapsed"
+      aria-controls="sidenav-collapse-main">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="title-container">
+      <a class="navbar-brand text-dark">
+        NM Tires
+      </a>
+    </div>
+    <div class="collapse navbar-collapse" [ngbCollapse]="isCollapsed" id="sidenav-collapse-main">
+      <div class="navbar-collapse-header d-md-none">
+        <div class="row">
+          <div class="col-6 collapse-brand">
+            <a>
+              BEDDING BAZZAR
+            </a>
+          </div>
+          <div class="col-6 collapse-close">
+            <button type="button" class="navbar-toggler" (click)="isCollapsed=!isCollapsed">
+              <span></span>
+              <span></span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <!-- Navigation -->
+      <ul class="navbar-nav">
+        <li *ngFor="let menuItem of menuItems" class="{{menuItem.class}} nav-item">
+          <a routerLinkActive="active" [routerLink]="[menuItem.path]"
+            class="nav-link d-flex align-items-center">
+            <span class="material-icons m-0 mr-1" style="font-size: 20px;">{{menuItem.icon}}</span> &nbsp;
+            {{menuItem.title}}
+          </a>
+        </li>
+        <li class="nav-item d-flex d-sm-none">
+          <a routerLinkActive="active" class="nav-link d-flex align-items-center">
+            <span class="material-icons">logout</span> &nbsp;
+            Logout
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
